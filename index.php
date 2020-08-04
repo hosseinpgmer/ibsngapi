@@ -104,6 +104,21 @@ $f3->route('POST /getFirstLoginTime',function() use($data,$db){
     return Helper::json_resp_success_with_data('با موفقیت انجام شد',$first_login);
 });
 
+$f3->route('POST /getAllAccounts',function() use($data,$db){
+    $users = $db->exec("SELECT
+	nu.normal_username \"username\",
+	nu.normal_password \"password\",
+	gr.group_name,
+	ua.attr_value \"first_login\"
+FROM
+	normal_users AS nu
+	INNER JOIN users AS u ON nu.user_id = u.user_id
+	INNER JOIN groups AS gr ON u.group_id = gr.group_id
+	INNER JOIN user_attrs AS ua ON ua.user_id=u.user_id
+	where ua.attr_name='first_login'");
+    return Helper::json_resp_success_with_data('لیست تمامی اکانت ها',$users);
+});
+
 \Middleware::instance()->before('GET|HEAD|POST|PUT|OPTIONS /*', function($f3) use($data){
     if($data->_token!=$f3->get('_token')){
         echo Helper::json_resp_error("شما به این روت دسترسی ندارید");

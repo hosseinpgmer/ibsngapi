@@ -105,8 +105,10 @@ $f3->route('POST /getFirstLoginTime',function() use($data,$db){
 });
 
 \Middleware::instance()->before('GET|HEAD|POST|PUT|OPTIONS /*', function($f3) use($data){
-    if($data->_token!=$f3->get('_token'))
-        return Helper::json_resp_error("شما به این روت دسترسی ندارید");
+    if($data->_token!=$f3->get('_token')){
+        echo Helper::json_resp_error("شما به این روت دسترسی ندارید");
+        exit(0);
+    }
 });
 \Middleware::instance()->run();
 $f3->run();

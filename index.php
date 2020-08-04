@@ -89,7 +89,7 @@ $f3->route('POST /changeAccountPassword',function() use($data,$db){
     if(!Helper::exists($db,'normal_users',['normal_username'=>$username]))
         return Helper::json_resp_success('این نام کاربری وجود ندارد');
     if(strlen($password)<=3)
-        return Helper::json_resp_error('رمز عبور باید حداقل سه کاراکتر داشته باشد'.$password);
+        return Helper::json_resp_error('رمز عبور باید حداقل سه کاراکتر داشته باشد');
     $db->exec("update normal_users set normal_password='$password' where normal_username='$username'");
     return Helper::json_resp_success('با موفقیت انجام شد');
 });
@@ -104,8 +104,9 @@ $f3->route('POST /getFirstLoginTime',function() use($data,$db){
     return Helper::json_resp_success_with_data('با موفقیت انجام شد',$first_login);
 });
 
-\Middleware::instance()->before('GET|HEAD|POST|PUT|OPTIONS /*', function($f3) {
-
+\Middleware::instance()->before('GET|HEAD|POST|PUT|OPTIONS /*', function($f3) use($data){
+    if($data->_token!=$f3->get('_token'))
+        return Helper::json_resp_error("شما به این روت دسترسی ندارید");
 });
 \Middleware::instance()->run();
 $f3->run();

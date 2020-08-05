@@ -87,7 +87,7 @@ $f3->route('POST /changeAccountPassword',function() use($data,$db){
     $username = $data->username;
     $password = $data->password;
     if(!Helper::exists($db,'normal_users',['normal_username'=>$username]))
-        return Helper::json_resp_success('این نام کاربری وجود ندارد');
+        return Helper::json_resp_error('این نام کاربری وجود ندارد');
     if(strlen($password)<=3)
         return Helper::json_resp_error('رمز عبور باید حداقل سه کاراکتر داشته باشد');
     $db->exec("update normal_users set normal_password='$password' where normal_username='$username'");
@@ -98,7 +98,7 @@ $f3->route('POST /getFirstLoginTime',function() use($data,$db){
     $username = $data->username;
     $password = $data->password;
     if(!Helper::exists($db,'normal_users',['normal_username'=>$username]))
-        return Helper::json_resp_success('این نام کاربری وجود ندارد');
+        return Helper::json_resp_error('این نام کاربری وجود ندارد');
     $user_id = Helper::getValue($db,'normal_users','user_id',['normal_username'=>$username,'normal_password'=>$password]);
     $first_login = Helper::getValue($db,'user_attrs','attr_value',['user_id'=>$user_id,'attr_name'=>'first_login']);
     return Helper::json_resp_success_with_data('با موفقیت انجام شد',$first_login);
@@ -116,8 +116,22 @@ FROM
 	INNER JOIN users AS u ON nu.user_id = u.user_id
 	INNER JOIN groups AS gr ON u.group_id = gr.group_id
 	full JOIN user_attrs AS ua ON ua.user_id=u.user_id
-	where ua.attr_name='first_login' or not exists(select * from user_attrs where user_id=ua.user_id)");
+	where ua.attr_name='first_login' or not exists(select * from user_attrs where user_id=ua.user_id) ORDER BY u.creation_date DESC");
     return Helper::json_resp_success_with_data('لیست تمامی اکانت ها',$users);
+});
+
+$f3->route('POST /deleteAccount',function() use($data,$db){
+    $username = $data->username;
+    $password = $data->password;
+    if(!Helper::exists($db,'normal_users',['normal_username'=>$username,'normal_password'=>$password]))
+        return Helper::json_resp_error('این اکانت وجود ندارد');
+    $user_id = Helper::getValue($db,'normal_users','user_id',['normal_username'=>$username,'normal_password'=>$password]);
+    if(!Helper::exists($db,'users',['user_id'=>$user_id]))
+        return Helper::json_resp_error('این اکانت وجود ندارد');
+    Helper::deleteRecord($db,'users',['user_id'=>$user_id]);
+    Helper::deleteRecord($db,'user_attrs',['user_id'=>$user_id]);
+    Helper::deleteRecord($db,'normal_users',['user_id'=>$user_id]);
+    return Helper::json_resp_success('با موفقیت انجام شد');
 });
 
 \Middleware::instance()->before('GET|HEAD|POST|PUT|OPTIONS /*', function($f3) use($data){

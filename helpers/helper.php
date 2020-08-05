@@ -23,6 +23,16 @@ class Helper{
         $result = $db->exec($sql);
         return $result[0][$column];
     }
+    public static function deleteRecord($db,$table,$attrs){
+        $conditions = implode(' and ', array_map(
+            function ($v, $k) { return sprintf("%s='%s'", $k, $v); },
+            $attrs,
+            array_keys($attrs)
+        ));
+        $sql = "delete from $table where $conditions";
+        $result = $db->exec($sql);
+        return $result;
+    }
     public static function json_resp_success($message){
         echo json_encode([
             'status'=>true,

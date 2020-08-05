@@ -128,9 +128,9 @@ $f3->route('POST /deleteAccount',function() use($data,$db){
     $user_id = Helper::getValue($db,'normal_users','user_id',['normal_username'=>$username,'normal_password'=>$password]);
     if(!Helper::exists($db,'users',['user_id'=>$user_id]))
         return Helper::json_resp_error('این اکانت وجود ندارد');
-    Helper::deleteRecord($db,'users',['user_id'=>$user_id]);
-    Helper::deleteRecord($db,'user_attrs',['user_id'=>$user_id]);
     Helper::deleteRecord($db,'normal_users',['user_id'=>$user_id]);
+    Helper::deleteRecord($db,'user_attrs',['user_id'=>$user_id]);
+    Helper::deleteRecord($db,'users',['user_id'=>$user_id]);
     return Helper::json_resp_success('با موفقیت انجام شد');
 });
 

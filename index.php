@@ -110,13 +110,13 @@ $f3->route('POST /getAllAccounts',function() use($data,$db){
 	nu.normal_username \"username\",
 	nu.normal_password \"password\",
 	gr.group_name,
-	ua.attr_name,
-	ua.attr_value
+	ua.attr_value \"first_login\"
 FROM
 	normal_users AS nu
 	INNER JOIN users AS u ON nu.user_id = u.user_id
 	INNER JOIN groups AS gr ON u.group_id = gr.group_id
-	full JOIN user_attrs AS ua ON ua.user_id=u.user_id");
+	full JOIN user_attrs AS ua ON ua.user_id=u.user_id
+	where ua.attr_name='first_login' or not exists(select * from user_attrs where user_id=ua.user_id)");
     return Helper::json_resp_success_with_data('لیست تمامی اکانت ها',$users);
 });
 

@@ -106,16 +106,17 @@ $f3->route('POST /getFirstLoginTime',function() use($data,$db){
 
 $f3->route('POST /getAllAccounts',function() use($data,$db){
     $users = $db->exec("SELECT
+	nu.user_id,
 	nu.normal_username \"username\",
 	nu.normal_password \"password\",
 	gr.group_name,
-	ua.attr_value \"first_login\"
+	ua.attr_name,
+	ua.attr_value
 FROM
 	normal_users AS nu
 	INNER JOIN users AS u ON nu.user_id = u.user_id
 	INNER JOIN groups AS gr ON u.group_id = gr.group_id
-	INNER JOIN user_attrs AS ua ON ua.user_id=u.user_id
-	where ua.attr_name='first_login'");
+	full JOIN user_attrs AS ua ON ua.user_id=u.user_id");
     return Helper::json_resp_success_with_data('لیست تمامی اکانت ها',$users);
 });
 

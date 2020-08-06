@@ -46,7 +46,7 @@ $f3->route('POST /editAccount',function($f3) use ($db,$data) {
           then 'true'
           else 'false'
         end;");
-        if($s[0]['case']==true)
+        if($s[0]['case']=='true')
             return Helper::json_resp_error('این نام کاربری قبلا برای اکانت دیگری ثبت شده است');
         $db->exec( "update normal_users set normal_username='$username',normal_password='$password' where user_id=$user_id");
         return Helper::json_resp_success('با موفقیت انجام شد');

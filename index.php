@@ -42,7 +42,7 @@ $f3->route('POST /editAccount',function($f3) use ($db,$data) {
         if(!Helper::exists($db,'normal_users',['user_id'=>$user_id]))
             return Helper::json_resp_error('این اکانت وجود ندارد');
         $s = $db->exec("select
-        case when exists (select true from normal_users where username=$username and user_id<>$user_id)
+        case when exists (select true from normal_users where normal_username=$username and user_id<>$user_id)
           then 'true'
           else 'false'
         end;");

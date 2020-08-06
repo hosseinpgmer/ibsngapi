@@ -134,6 +134,15 @@ $f3->route('POST /deleteAccount',function() use($data,$db){
     return Helper::json_resp_success('با موفقیت انجام شد');
 });
 
+$f3->route('POST /getUserId',function() use($data,$db){
+    $username = $data->username;
+    $password = $data->password;
+    if(!Helper::exists($db,'normal_users',['normal_username'=>$username,'normal_password'=>$password]))
+        return Helper::json_resp_error('این اکانت وجود ندارد');
+    $user_id = Helper::getValue($db,'normal_users','user_id',['normal_username'=>$username,'normal_password'=>$password]);
+    return Helper::json_resp_success_with_data('با موفقیت انجام شد',$user_id);
+});
+
 \Middleware::instance()->before('GET|HEAD|POST|PUT|OPTIONS /*', function($f3) use($data){
     if($data->_token!=$f3->get('_token')){
         echo Helper::json_resp_error("شما به این روت دسترسی ندارید");

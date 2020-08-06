@@ -28,13 +28,21 @@ $f3->route('POST /addUser',function($f3) use ($db,$data) {
     if(!Helper::exists($db,'normal_users',['normal_username'=>$username])){
         $db->exec( "insert into users values($last_id,0,1.00,$group_id,CURRENT_TIMESTAMP)");
         $db->exec( "insert into normal_users values($last_id,'$username','$password')");
-        return Helper::json_resp_success('با موفقیت انجام شد');
+        return Helper::json_resp_success_with_data('با موفقیت انجام شد',$last_id);
     }else{
         return Helper::json_resp_error('این نام کاربری قبلا استفاده شده است');
     }
 });
 
 $f3->route('POST /checkUser',function($f3) use ($db,$data) {
+    $user_id = $data->user_id;
+    if(isset($user_id)){
+        if(Helper::exists($db,'normal_users',['user_id'=>$user_id])){
+            return Helper::json_resp_success('این نام کاربری و رمز عبور وجود دارد');
+        }else{
+            return Helper::json_resp_error('این نام کاربری و رمز عبور وجود ندارد');
+        }
+    }
     $username = $data->username;
     $password = $data->password;
     if(Helper::exists($db,'normal_users',['normal_username'=>$username,'normal_password'=>$password])){
@@ -67,6 +75,13 @@ $f3->route('POST /changeUserGroup',function($f3) use ($db,$data) {
 });
 
 $f3->route('POST /checkUsername',function() use($data,$db){
+    $user_id = $data->user_id;
+    if(isset($user_id)){
+        if(Helper::exists($db,'normal_users',['user_id'=>$user_id]))
+            return Helper::json_resp_success('این نام کاربری وجود دارد');
+        else
+            return Helper::json_resp_error('این نام کاربری وجود ندارد');
+    }
     $username = $data->username;
     if(Helper::exists($db,'normal_users',['normal_username'=>$username]))
         return Helper::json_resp_success('این نام کاربری وجود دارد');
@@ -75,6 +90,13 @@ $f3->route('POST /checkUsername',function() use($data,$db){
 });
 
 $f3->route('POST /checkUsernameAndPassword',function() use($data,$db){
+    $user_id = $data->user_id;
+    if(isset($user_id)){
+        if(Helper::exists($db,'normal_users',['user_id'=>$user_id]))
+            return Helper::json_resp_success('این کاربر وجود دارد');
+        else
+            return Helper::json_resp_error('این کاربر وجود ندارد');
+    }
     $password = $data->password;
     $username = $data->username;
     if(Helper::exists($db,'normal_users',['normal_password'=>$password,'normal_username'=>$username]))
@@ -84,8 +106,17 @@ $f3->route('POST /checkUsernameAndPassword',function() use($data,$db){
 });
 
 $f3->route('POST /changeAccountPassword',function() use($data,$db){
-    $username = $data->username;
+    $user_id = $data->user_id;
     $password = $data->password;
+    if(isset($user_id)){
+        if(!Helper::exists($db,'normal_users',['user_id'=>$user_id]))
+            return Helper::json_resp_error('این نام کاربری وجود ندارد');
+        if(strlen($password)<=3)
+            return Helper::json_resp_error('رمز عبور باید حداقل سه کاراکتر داشته باشد');
+        $db->exec("update normal_users set normal_password='$password' where user_id='$user_id'");
+        return Helper::json_resp_success('با موفقیت انجام شد');
+    }
+    $username = $data->username;
     if(!Helper::exists($db,'normal_users',['normal_username'=>$username]))
         return Helper::json_resp_error('این نام کاربری وجود ندارد');
     if(strlen($password)<=3)
@@ -95,10 +126,17 @@ $f3->route('POST /changeAccountPassword',function() use($data,$db){
 });
 
 $f3->route('POST /getFirstLoginTime',function() use($data,$db){
+    $user_id = $data->user_id;
+    if(isset($user_id)){
+        if(!Helper::exists($db,'normal_users',['user_id'=>$user_id]))
+            return Helper::json_resp_error('این اکانت وجود ندارد');
+        $first_login = Helper::getValue($db,'user_attrs','attr_value',['user_id'=>$user_id,'attr_name'=>'first_login']);
+        return Helper::json_resp_success_with_data('با موفقیت انجام شد',$first_login);
+    }
     $username = $data->username;
     $password = $data->password;
     if(!Helper::exists($db,'normal_users',['normal_username'=>$username]))
-        return Helper::json_resp_error('این نام کاربری وجود ندارد');
+        return Helper::json_resp_error('این اکانت وجود ندارد');
     $user_id = Helper::getValue($db,'normal_users','user_id',['normal_username'=>$username,'normal_password'=>$password]);
     $first_login = Helper::getValue($db,'user_attrs','attr_value',['user_id'=>$user_id,'attr_name'=>'first_login']);
     return Helper::json_resp_success_with_data('با موفقیت انجام شد',$first_login);
@@ -121,6 +159,15 @@ FROM
 });
 
 $f3->route('POST /deleteAccount',function() use($data,$db){
+    $user_id = $data->user_id;
+    if(isset($user_id)){
+        if(!Helper::exists($db,'normal_users',['user_id'=>$user_id]))
+            return Helper::json_resp_error('این اکانت وجود ندارد');
+        Helper::deleteRecord($db,'normal_users',['user_id'=>$user_id]);
+        Helper::deleteRecord($db,'user_attrs',['user_id'=>$user_id]);
+        Helper::deleteRecord($db,'users',['user_id'=>$user_id]);
+        return Helper::json_resp_success('با موفقیت انجام شد');
+    }
     $username = $data->username;
     $password = $data->password;
     if(!Helper::exists($db,'normal_users',['normal_username'=>$username,'normal_password'=>$password]))

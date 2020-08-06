@@ -13,7 +13,7 @@ $f3->config('config.ini');
 $db = DB::connect();
 $data = json_decode(file_get_contents("php://input"));
 header('Content-Type: application/json');
-$f3->route('POST /addUser',function($f3) use ($db,$data) {
+$f3->route('POST /addAccount',function($f3) use ($db,$data) {
     $username = $data->username;
     $password = $data->password;
     $group_name = $data->group_name;
@@ -31,6 +31,20 @@ $f3->route('POST /addUser',function($f3) use ($db,$data) {
         return Helper::json_resp_success_with_data('با موفقیت انجام شد',$last_id);
     }else{
         return Helper::json_resp_error('این نام کاربری قبلا استفاده شده است');
+    }
+});
+
+$f3->route('POST /editAccount',function($f3) use ($db,$data) {
+    $user_id = $data->user_id;
+    $username = $data->username;
+    $password = $data->password;
+    if(isset($user_id)){
+        if(!Helper::exists($db,'normal_users',['user_id'=>$user_id]))
+            return Helper::json_resp_error('این نام کاربری وجود ندارد');
+        if(!Helper::exists($db,'normal_users',['normal_username'=>$username]))
+            return Helper::json_resp_error('این نام کاربری قبلا ثبت شده است');
+        $db->exec( "update users set normal_username=$username,normal_password=$password where user_id=$user_id");
+        return Helper::json_resp_success('با موفقیت انجام شد');
     }
 });
 

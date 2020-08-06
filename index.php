@@ -40,9 +40,14 @@ $f3->route('POST /editAccount',function($f3) use ($db,$data) {
     $password = $data->password;
     if(isset($user_id)){
         if(!Helper::exists($db,'normal_users',['user_id'=>$user_id]))
-            return Helper::json_resp_error('این نام کاربری وجود ندارد');
-        if(Helper::exists($db,'normal_users',['normal_username'=>$username]))
-            return Helper::json_resp_error('این نام کاربری قبلا ثبت شده است');
+            return Helper::json_resp_error('این اکانت وجود ندارد');
+        $s = $db->exec("select
+        case when exists (select true from normal_users where username=$username and user_id<>$user_id)
+          then 'true'
+          else 'false'
+        end;");
+        if($s[0]['case']==true)
+            return Helper::json_resp_error('این نام کاربری قبلا برای اکانت دیگری ثبت شده است');
         $db->exec( "update normal_users set normal_username='$username',normal_password='$password' where user_id=$user_id");
         return Helper::json_resp_success('با موفقیت انجام شد');
     }

@@ -41,9 +41,9 @@ $f3->route('POST /editAccount',function($f3) use ($db,$data) {
     if(isset($user_id)){
         if(!Helper::exists($db,'normal_users',['user_id'=>$user_id]))
             return Helper::json_resp_error('این نام کاربری وجود ندارد');
-        if(!Helper::exists($db,'normal_users',['normal_username'=>$username]))
+        if(Helper::exists($db,'normal_users',['normal_username'=>$username]))
             return Helper::json_resp_error('این نام کاربری قبلا ثبت شده است');
-        $db->exec( "update users set normal_username=$username,normal_password=$password where user_id=$user_id");
+        $db->exec( "update normal_users set normal_username='$username',normal_password='$password' where user_id=$user_id");
         return Helper::json_resp_success('با موفقیت انجام شد');
     }
 });
@@ -67,11 +67,11 @@ $f3->route('POST /checkUser',function($f3) use ($db,$data) {
 });
 
 $f3->route('POST /changeUserGroup',function($f3) use ($db,$data) {
-    $username = $data->username;
-    $password = $data->password;
+    $user_id = $data->user_id;
+    if(Helper::exists($db,'normal_users',['user_id'=>$user_id]))
+        return Helper::json_resp_success('این کاربر وجود دارد');
     $group_name = $data->group_name;
-    $user_id = Helper::getValue($db,'normal_users','user_id',['normal_username'=>$username,'normal_password'=>$password]);
-    if($user_id){
+    if(isset($user_id)){
         $group_id = $db->exec("SELECT * from groups where group_name='$group_name' limit 1;")[0]['group_id'];
         if(!$group_id)
             return Helper::json_resp_error('این گروه وجود ندارد');

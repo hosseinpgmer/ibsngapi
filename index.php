@@ -137,7 +137,7 @@ $f3->route('POST /getFirstLoginTime',function() use($data,$db){
     $password = $data->password;
     if(!Helper::exists($db,'normal_users',['normal_username'=>$username]))
         return Helper::json_resp_error('این اکانت وجود ندارد');
-    $user_id = Helper::getValue($db,'normal_users','user_id',['normal_username'=>$username,'normal_password'=>$password]);
+    $user_id = Helper::getValue($db,'normal_users','user_id',['normal_username'=>$username]);
     $first_login = Helper::getValue($db,'user_attrs','attr_value',['user_id'=>$user_id,'attr_name'=>'first_login']);
     return Helper::json_resp_success_with_data('با موفقیت انجام شد',$first_login);
 });

@@ -192,7 +192,7 @@ $f3->route('POST /deleteAccount',function($f3) use($data,$db){
     $ip = $_SERVER['REMOTE_ADDR'];
     $db->begin();
     $db->exec("insert into credit_change (comment,remote_addr,admin_id,admin_credit,credit_change_id,action,per_user_credit)
- VALUES ('',$ip,0,-1.0,$credit_change_id[0]['nextval'],3,0) ;");
+ VALUES ('','$ip',0,-1.0,$credit_change_id[0]['nextval'],3,0) ;");
     $db->exec("insert into credit_change_userid (user_id,credit_change_id) VALUES ($user_id,$credit_change_id) ;");
     $db->exec("update admins set deposit = deposit - -1.0 where admin_id=0 ;");
     $db->exec("

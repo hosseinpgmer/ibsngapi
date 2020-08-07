@@ -195,18 +195,16 @@ $f3->route('POST /deleteAccount',function($f3) use($data,$db){
  VALUES ('','$ip',0,-1.0,$credit_change_id,3,0) ;");
     $db->exec("insert into credit_change_userid (user_id,credit_change_id) VALUES ($user_id,$credit_change_id) ;");
     $db->exec("update admins set deposit = deposit - -1.0 where admin_id=0 ;");
-    $db->exec("
-        delete from user_attrs where user_id in ($user_id::bigint);
-        delete from normal_users where user_id in ($user_id::bigint);
-        delete from persistent_lan_users where user_id in ($user_id::bigint);
-        delete from caller_id_users where user_id in ($user_id::bigint);
-        delete from voip_users where user_id in ($user_id::bigint);
-        delete from user_messages where user_id in ($user_id::bigint);
-        delete from admin_messages where user_id in ($user_id::bigint);
-        delete from web_analyzer_log where user_id in ($user_id::bigint);
-        delete from internet_bw_snapshot where user_id in ($user_id::bigint);
-        delete from users where user_id in ($user_id::bigint);
-    ");
+    $db->exec("delete from user_attrs where user_id in ($user_id::bigint);");
+    $db->exec("delete from normal_users where user_id in ($user_id::bigint);");
+    $db->exec("delete from persistent_lan_users where user_id in ($user_id::bigint);");
+    $db->exec("delete from caller_id_users where user_id in ($user_id::bigint);");
+    $db->exec("delete from voip_users where user_id in ($user_id::bigint);");
+    $db->exec("delete from user_messages where user_id in ($user_id::bigint);");
+    $db->exec("delete from admin_messages where user_id in ($user_id::bigint);");
+    $db->exec("delete from web_analyzer_log where user_id in ($user_id::bigint);");
+    $db->exec("delete from internet_bw_snapshot where user_id in ($user_id::bigint);");
+    $db->exec("delete from users where user_id in ($user_id::bigint);");
     $db->commit();
     return Helper::json_resp_success('با موفقیت انجام شد');
 });

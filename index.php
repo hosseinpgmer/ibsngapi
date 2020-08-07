@@ -179,26 +179,34 @@ FROM
     return Helper::json_resp_success_with_data('لیست تمامی اکانت ها',$users);
 });
 
-$f3->route('POST /deleteAccount',function() use($data,$db){
-    $user_id = $data->user_id;
-    if(isset($user_id)){
-        if(!Helper::exists($db,'normal_users',['user_id'=>$user_id]))
-            return Helper::json_resp_error('این اکانت وجود ندارد');
-        Helper::deleteRecord($db,'normal_users',['user_id'=>$user_id]);
-        Helper::deleteRecord($db,'user_attrs',['user_id'=>$user_id]);
-        Helper::deleteRecord($db,'users',['user_id'=>$user_id]);
-        return Helper::json_resp_success('با موفقیت انجام شد');
-    }
+$f3->route('POST /deleteAccount',function($f3) use($data,$db){
+    $user_id = isset($data->user_id)?$data->user_id:null;
     $username = $data->username;
     $password = $data->password;
-    if(!Helper::exists($db,'normal_users',['normal_username'=>$username,'normal_password'=>$password]))
+    if($user_id == null){
+        $user_id = Helper::getValue($db,'normal_users','user_id',['normal_username'=>$username,'normal_password'=>$password]);
+    }
+    if(!Helper::exists($db,'normal_users',['user_id'=>$user_id]))
         return Helper::json_resp_error('این اکانت وجود ندارد');
-    $user_id = Helper::getValue($db,'normal_users','user_id',['normal_username'=>$username,'normal_password'=>$password]);
-    if(!Helper::exists($db,'users',['user_id'=>$user_id]))
-        return Helper::json_resp_error('این اکانت وجود ندارد');
-    Helper::deleteRecord($db,'normal_users',['user_id'=>$user_id]);
-    Helper::deleteRecord($db,'user_attrs',['user_id'=>$user_id]);
-    Helper::deleteRecord($db,'users',['user_id'=>$user_id]);
+    $credit_change_id = $db->exec("select nextval('credit_change_id');")[0]['credit_change_id'];
+    $db->begin();
+    $db->exec("insert into credit_change (comment,remote_addr,admin_id,admin_credit,credit_change_id,action,per_user_credit)
+ VALUES ('',$f3->get('IP'),0,-1.0,$credit_change_id,3,0) ;");
+    $db->exec("insert into credit_change_userid (user_id,credit_change_id) VALUES ($user_id,$credit_change_id) ;");
+    $db->exec("update admins set deposit = deposit - -1.0 where admin_id=0 ;");
+    $db->exec("
+        delete from user_attrs where user_id in ($user_id::bigint);
+        delete from normal_users where user_id in ($user_id::bigint);
+        delete from persistent_lan_users where user_id in ($user_id::bigint);
+        delete from caller_id_users where user_id in ($user_id::bigint);
+        delete from voip_users where user_id in ($user_id::bigint);
+        delete from user_messages where user_id in ($user_id::bigint);
+        delete from admin_messages where user_id in ($user_id::bigint);
+        delete from web_analyzer_log where user_id in ($user_id::bigint);
+        delete from internet_bw_snapshot where user_id in ($user_id::bigint);
+        delete from users where user_id in ($user_id::bigint);
+    ");
+    $db->commit();
     return Helper::json_resp_success('با موفقیت انجام شد');
 });
 

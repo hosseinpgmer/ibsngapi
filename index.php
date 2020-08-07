@@ -26,8 +26,10 @@ $f3->route('POST /addAccount',function($f3) use ($db,$data) {
     if(!$group_id)
         return Helper::json_resp_error('این گروه وجود ندارد');
     if(!Helper::exists($db,'normal_users',['normal_username'=>$username])){
-        $db->exec( "insert into users values($last_id,0,1.00,$group_id,CURRENT_TIMESTAMP)");
-        $db->exec( "insert into normal_users values($last_id,'$username','$password')");
+//        $db->exec( "insert into users values($last_id,0,1.00,$group_id,CURRENT_TIMESTAMP)");
+//        $db->exec( "insert into normal_users values($last_id,'$username','$password')");
+        $db->exec( "select add_user(int8($last_id),int4(1.00),0,int4($group_id));");
+        $db->exec( "select insert_normal_user(int8($last_id),'$username','$password');");
         return Helper::json_resp_success_with_data('با موفقیت انجام شد',$last_id);
     }else{
         return Helper::json_resp_error('این نام کاربری قبلا استفاده شده است');

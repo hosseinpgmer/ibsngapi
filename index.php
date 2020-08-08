@@ -17,19 +17,20 @@ $f3->route('POST /addAccount',function($f3) use ($db,$data) {
     $username = $data->username;
     $password = $data->password;
     $group_name = $data->group_name;
-    $last_id = $db->exec("SELECT * from users ORDER BY creation_date DESC limit 1;")[0]['user_id'];
-    while (Helper::exists($db,'users', ['user_id'=>$last_id]))
-    {
-        $last_id++;
-    }
+    $last_id = $db->exec("select nextval('users_user_id_seq');")[0]['nextval'];
     $group_id = $db->exec("SELECT * from groups where group_name='$group_name' limit 1;")[0]['group_id'];
+    $credit_change_id = $db->exec("select nextval('credit_change_id');")[0]['nextval'];
+    $ip = $_SERVER['REMOTE_ADDR'];
     if(!$group_id)
         return Helper::json_resp_error('این گروه وجود ندارد');
     if(!Helper::exists($db,'normal_users',['normal_username'=>$username])){
-//        $db->exec( "insert into users values($last_id,0,1.00,$group_id,CURRENT_TIMESTAMP)");
-//        $db->exec( "insert into normal_users values($last_id,'$username','$password')");
+        $db->begin();
+        $db->exec("insert into credit_change (comment,remote_addr,admin_id,admin_credit,credit_change_id,action,per_user_credit)
+ VALUES ('','$ip',0,-1.0,$credit_change_id,1,1.0) ;");
+        $db->exec("insert into credit_change_userid (user_id,credit_change_id) VALUES ($last_id,$credit_change_id) ;");
         $db->exec( "select add_user(int8($last_id),int4(1.00),0,int4($group_id));");
         $db->exec( "select insert_normal_user(int8($last_id),'$username','$password');");
+        $db->commit();
         return Helper::json_resp_success_with_data('با موفقیت انجام شد',$last_id);
     }else{
         return Helper::json_resp_error('این نام کاربری قبلا استفاده شده است');

@@ -17,9 +17,13 @@ you can set this in "helpers/DB.php"\:
     return  $db;
 
 Replace **{your_host}** with your **host**.
+
 Replace **{your_postgresql_port}** with your **postgresql port** (default is 5432).
+
 Replace **{your_database_name}** with your **database name**.
+
 Replace **{your_username}** with **database username**.
+
 Replace **{your_password}** with **database password**.
 
 Done. Now you can work with this api module.
